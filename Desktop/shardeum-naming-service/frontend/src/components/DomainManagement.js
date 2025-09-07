@@ -217,7 +217,11 @@ const DomainManagement = ({
                 <span className="owner-badge">Your Domain</span>
                 <span className="expiry-info">
                   <FiClock />
-                  Expires: {new Date(domain?.expiry).toLocaleDateString()}
+                  Expires: {new Date(domain?.expiry * 1000).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
                 </span>
               </div>
             </div>

@@ -170,8 +170,11 @@ const ResolutionDemo = ({ provider, userDomains = [] }) => {
                     whileHover={{ scale: 1.02 }}
                   >
                     <div className="sample-info">
+                      <div className="domain-label">Registered Domain</div>
                       <h4>{domain.name}.shm</h4>
-                      <p>Owner: {domain.address || domain.owner}</p>
+                      <div className="domain-address address-full">
+                        {domain.address || domain.owner}
+                      </div>
                     </div>
                     <div className="sample-actions">
                       <button 

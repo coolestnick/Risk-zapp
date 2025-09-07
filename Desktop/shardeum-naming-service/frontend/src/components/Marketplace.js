@@ -87,7 +87,14 @@ const Marketplace = ({
       console.log('Loading active auctions...');
       const activeAuctions = await blockchainService.getActiveAuctions();
       console.log('Loaded auctions:', activeAuctions);
+      console.log('Setting auction state with', activeAuctions.length, 'auctions');
+      console.log('Raw auction data:', JSON.stringify(activeAuctions, null, 2));
       setAuctions(activeAuctions);
+      
+      // Debug: Log the state after setting
+      setTimeout(() => {
+        console.log('State check - auctions in component state:', auctions.length);
+      }, 100);
     } catch (error) {
       console.error('Error loading auctions:', error);
       toast.error('Failed to load auctions: ' + error.message);
@@ -556,7 +563,13 @@ const Marketplace = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              {auctions.length === 0 && !isLoading ? (
+              {/* Debug info */}
+              <div style={{background: 'rgba(255,255,255,0.1)', padding: '10px', margin: '10px', borderRadius: '5px', fontSize: '12px'}}>
+                🐛 DEBUG: auctions.length = {auctions.length}, isLoading = {isLoading ? 'true' : 'false'}
+                {auctions.length > 0 && <div>First auction: {auctions[0]?.name}</div>}
+              </div>
+              
+              {(auctions.length === 0 && !isLoading) ? (
                 <div className="empty-state glass">
                   <FiAlertCircle size={48} />
                   <h3>No Active Auctions</h3>

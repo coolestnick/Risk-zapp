@@ -1,7 +1,6 @@
 // Contract Configuration
 export const CONTRACT_ADDRESS = '0x2F65232f7803A313B4E1761692B5189b76f0f6B7';
-// ⚠️ IMPORTANT: Replace this with your deployed advanced marketplace contract address
-export const MARKETPLACE_ADDRESS = 'YOUR_DEPLOYED_ADVANCED_CONTRACT_ADDRESS';
+export const MARKETPLACE_ADDRESS = '0x79DE87692Db8E9037a62de9a5beD988C3F15B045';
 
 export const CONTRACT_ABI = [
     {
@@ -548,6 +547,55 @@ export const CONTRACT_ABI = [
             }
         ],
         "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+            }
+        ],
+        "name": "removeDomainFromSale",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "internalType": "uint256",
+                "name": "price",
+                "type": "uint256"
+            }
+        ],
+        "name": "setDomainForSale",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "string",
+                "name": "name",
+                "type": "string"
+            },
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            }
+        ],
+        "name": "transferDomain",
+        "outputs": [],
+        "stateMutability": "nonpayable",
         "type": "function"
     }
 ];
