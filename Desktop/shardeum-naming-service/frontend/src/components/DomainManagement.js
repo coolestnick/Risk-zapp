@@ -18,11 +18,16 @@ const DomainManagement = ({
   const [auctionInfo, setAuctionInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [acceptingOffer, setAcceptingOffer] = useState(null);
+  const [listingInfo, setListingInfo] = useState(null);
+  const [showCreateListing, setShowCreateListing] = useState(false);
+  const [listingPrice, setListingPrice] = useState('');
+  const [creatingListing, setCreatingListing] = useState(false);
 
   useEffect(() => {
     if (isOpen && domain && blockchainService) {
       loadOffers();
       loadAuctionInfo();
+      loadListingInfo();
     }
   }, [isOpen, domain, blockchainService]);
 
@@ -120,6 +125,92 @@ const DomainManagement = ({
     } catch (error) {
       console.error('Error loading auction info:', error);
       setAuctionInfo(null);
+    }
+  };
+
+  const loadListingInfo = async () => {
+    if (!marketplaceContract || !domain) return;
+    
+    try {
+      console.log('Loading listing info for domain:', domain.name);
+      const listing = await marketplaceContract.getListing(domain.name);
+      
+      if (listing[2]) { // active
+        const listingData = {
+          seller: listing[0],
+          price: parseFloat(ethers.utils.formatEther(listing[1])),
+          active: listing[2]
+        };
+        
+        setListingInfo(listingData);
+        console.log('Loaded listing info:', listingData);
+      } else {
+        setListingInfo(null);
+      }
+    } catch (error) {
+      console.error('Error loading listing info:', error);
+      setListingInfo(null);
+    }
+  };
+
+  const handleCreateListing = async () => {
+    if (!marketplaceContract || !listingPrice || !domain) return;
+
+    setCreatingListing(true);
+    try {
+      console.log('Creating listing for domain:', domain.name, 'Price:', listingPrice);
+
+      const priceWei = ethers.utils.parseEther(listingPrice);
+      
+      const tx = await marketplaceContract.createListing(domain.name, priceWei);
+      toast.loading(`Creating listing for ${domain.name}.shm...`);
+      
+      await tx.wait();
+      
+      toast.success(`${domain.name}.shm is now listed for ${listingPrice} SHM!`);
+      
+      // Reload listing info
+      await loadListingInfo();
+      setShowCreateListing(false);
+      setListingPrice('');
+      
+    } catch (error) {
+      console.error('Error creating listing:', error);
+      if (error.code === 'ACTION_REJECTED') {
+        toast.error('Transaction cancelled');
+      } else if (error.reason) {
+        toast.error(`Failed to create listing: ${error.reason}`);
+      } else {
+        toast.error('Failed to create listing: ' + error.message);
+      }
+    } finally {
+      setCreatingListing(false);
+    }
+  };
+
+  const handleCancelListing = async () => {
+    if (!marketplaceContract || !domain) return;
+
+    try {
+      console.log('Cancelling listing for domain:', domain.name);
+
+      const tx = await marketplaceContract.cancelListing(domain.name);
+      toast.loading(`Cancelling listing for ${domain.name}.shm...`);
+      
+      await tx.wait();
+      
+      toast.success(`Listing cancelled for ${domain.name}.shm`);
+      
+      // Reload listing info
+      await loadListingInfo();
+      
+    } catch (error) {
+      console.error('Error cancelling listing:', error);
+      if (error.code === 'ACTION_REJECTED') {
+        toast.error('Transaction cancelled');
+      } else {
+        toast.error('Failed to cancel listing: ' + error.message);
+      }
     }
   };
 
@@ -448,6 +539,99 @@ const DomainManagement = ({
                       </motion.div>
                     );
                   })}
+                </div>
+              )}
+            </div>
+
+            {/* Listing Management */}
+            <div className="listing-section">
+              <div className="section-header">
+                <h3>
+                  <FiDollarSign />
+                  Domain Listing
+                </h3>
+              </div>
+
+              {listingInfo ? (
+                <div className="listing-card active-listing">
+                  <div className="listing-header">
+                    <div className="listing-status">
+                      <span className="status-badge active">Listed for Sale</span>
+                      <span className="listing-price">{listingInfo.price} SHM</span>
+                    </div>
+                    <button
+                      className="cancel-listing-btn"
+                      onClick={handleCancelListing}
+                    >
+                      Cancel Listing
+                    </button>
+                  </div>
+                  <div className="listing-info">
+                    <p>Your domain is currently listed for sale at <strong>{listingInfo.price} SHM</strong></p>
+                    <p>Buyers can purchase it instantly from the marketplace.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="listing-card no-listing">
+                  {showCreateListing ? (
+                    <div className="create-listing-form">
+                      <h4>List Domain for Sale</h4>
+                      <div className="form-group">
+                        <label htmlFor="listing-price">Price (SHM)</label>
+                        <input
+                          id="listing-price"
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          placeholder="e.g., 5.0"
+                          value={listingPrice}
+                          onChange={(e) => setListingPrice(e.target.value)}
+                          disabled={creatingListing}
+                        />
+                      </div>
+                      <div className="form-actions">
+                        <button
+                          className="btn-create-listing"
+                          onClick={handleCreateListing}
+                          disabled={creatingListing || !listingPrice || parseFloat(listingPrice) <= 0}
+                        >
+                          {creatingListing ? (
+                            <>
+                              <div className="spinner"></div>
+                              Creating...
+                            </>
+                          ) : (
+                            'Create Listing'
+                          )}
+                        </button>
+                        <button
+                          className="btn-cancel"
+                          onClick={() => {
+                            setShowCreateListing(false);
+                            setListingPrice('');
+                          }}
+                          disabled={creatingListing}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="no-listing-state">
+                      <div className="no-listing-icon">
+                        <FiDollarSign size={32} />
+                      </div>
+                      <h4>Domain Not Listed</h4>
+                      <p>List your domain for sale to allow others to buy it instantly.</p>
+                      <button
+                        className="btn-list-domain"
+                        onClick={() => setShowCreateListing(true)}
+                        disabled={!!auctionInfo?.active}
+                      >
+                        {auctionInfo?.active ? 'Cannot list during auction' : 'List for Sale'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

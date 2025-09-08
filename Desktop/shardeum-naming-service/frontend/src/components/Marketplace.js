@@ -33,6 +33,10 @@ const Marketplace = ({
     salesCount24h: 0
   });
   const [blockchainService, setBlockchainService] = useState(null);
+  
+  // Buy domain functionality  
+  const [listings, setListings] = useState([]);
+  const [buyingDomain, setBuyingDomain] = useState(null);
 
   // Initialize blockchain service
   useEffect(() => {
@@ -67,7 +71,8 @@ const Marketplace = ({
         loadUserAuctions(),
         loadRecentSales(),
         loadTradingStats(),
-        loadUserOffers()
+        loadUserOffers(),
+        loadActiveListings()
       ]);
     } catch (error) {
       console.error('Error loading marketplace data:', error);
@@ -147,6 +152,52 @@ const Marketplace = ({
       setUserOffers(userOffersList);
     } catch (error) {
       console.error('Error loading user offers:', error);
+    }
+  };
+
+  const loadActiveListings = async () => {
+    try {
+      if (!marketplaceContract) {
+        console.log('Marketplace contract not available');
+        return;
+      }
+      
+      console.log('Loading active listings...');
+      
+      // Get all domains that might have listings
+      const commonDomains = ['test', 'demo', 'hello', 'world', 'name', 'domain', 
+        'nick', 'nikhil', 'nikkhil', 'example', 'sample', 'cool', 'awesome', 
+        'crypto', 'king', 'crypto-king', 'bitcoin', 'eth', 'shm'];
+      
+      const activeListings = [];
+      
+      for (const domainName of commonDomains) {
+        try {
+          const listing = await marketplaceContract.getListing(domainName);
+          console.log(`Checking listing for ${domainName}:`, listing);
+          
+          if (listing[2]) { // active = listing[2]
+            const listingData = {
+              name: domainName,
+              seller: listing[0],
+              price: parseFloat(ethers.utils.formatEther(listing[1])),
+              active: listing[2]
+            };
+            activeListings.push(listingData);
+            console.log('Active listing found:', listingData);
+          }
+        } catch (error) {
+          // Domain might not exist or have listing, continue
+          console.log(`No listing for ${domainName}:`, error.message);
+        }
+      }
+      
+      console.log('Total active listings found:', activeListings.length);
+      setListings(activeListings);
+      
+    } catch (error) {
+      console.error('Error loading listings:', error);
+      setListings([]);
     }
   };
 
@@ -348,12 +399,107 @@ const Marketplace = ({
     }
   };
 
+  const handleBuyDomain = async (domainName, listingPrice) => {
+    if (!marketplaceContract) {
+      toast.error('Marketplace contract not available');
+      return;
+    }
+
+    setBuyingDomain(domainName);
+    try {
+      console.log('Buying domain:', {
+        domain: domainName,
+        price: listingPrice,
+        account: account
+      });
+
+      const priceWei = ethers.utils.parseEther(listingPrice.toString());
+      
+      // Estimate gas
+      const gasEstimate = await marketplaceContract.estimateGas.buyDomain(domainName, {
+        value: priceWei
+      });
+      
+      console.log('Gas estimate:', gasEstimate.toString());
+      
+      const tx = await marketplaceContract.buyDomain(domainName, {
+        value: priceWei,
+        gasLimit: gasEstimate.mul(120).div(100) // Add 20% buffer
+      });
+      
+      toast.loading(`Purchasing ${domainName}.shm for ${listingPrice} SHM...`);
+      
+      console.log('Purchase transaction sent:', {
+        hash: tx.hash,
+        value: ethers.utils.formatEther(priceWei)
+      });
+      
+      const receipt = await tx.wait();
+      console.log('Purchase confirmed:', {
+        hash: receipt.transactionHash,
+        gasUsed: receipt.gasUsed.toString()
+      });
+      
+      toast.success(`Successfully purchased ${domainName}.shm!`);
+      
+      // Refresh marketplace data
+      await loadMarketplaceData();
+      
+    } catch (error) {
+      console.error('Error buying domain:', error);
+      if (error.code === 'ACTION_REJECTED') {
+        toast.error('Transaction cancelled');
+      } else if (error.reason) {
+        toast.error(`Purchase failed: ${error.reason}`);
+      } else {
+        toast.error('Failed to purchase domain: ' + error.message);
+      }
+    } finally {
+      setBuyingDomain(null);
+    }
+  };
+
+  const handleAcceptOffer = async (domainName, offerIndex) => {
+    if (!marketplaceContract) {
+      toast.error('Marketplace contract not available');
+      return;
+    }
+
+    try {
+      console.log('Accepting offer:', {
+        domain: domainName,
+        offerIndex: offerIndex,
+        account: account
+      });
+
+      const tx = await marketplaceContract.acceptOffer(domainName, offerIndex);
+      toast.loading(`Accepting offer for ${domainName}.shm...`);
+      
+      const receipt = await tx.wait();
+      console.log('Offer acceptance confirmed:', receipt.transactionHash);
+      
+      toast.success(`Offer accepted for ${domainName}.shm!`);
+      
+      // Refresh marketplace data
+      await loadMarketplaceData();
+      
+    } catch (error) {
+      console.error('Error accepting offer:', error);
+      if (error.code === 'ACTION_REJECTED') {
+        toast.error('Transaction cancelled');
+      } else {
+        toast.error('Failed to accept offer: ' + error.message);
+      }
+    }
+  };
+
   const handleRefresh = async () => {
     setRefreshing(true);
     await loadMarketplaceData();
     setRefreshing(false);
     toast.success('Marketplace data refreshed!');
   };
+
 
   const openBidModal = (auction) => {
     setSelectedAuction(auction);
@@ -533,6 +679,12 @@ const Marketplace = ({
               onClick={() => setActiveTab('auctions')}
             >
               <FiClock /> Live Auctions ({auctions.length})
+            </button>
+            <button 
+              className={`tab-btn ${activeTab === 'buy-now' ? 'active' : ''}`}
+              onClick={() => setActiveTab('buy-now')}
+            >
+              <FiDollarSign /> Buy Now ({listings.length})
             </button>
             {account && (
               <button 
@@ -826,6 +978,97 @@ const Marketplace = ({
                         <button 
                           className="btn-details"
                           onClick={() => handleViewDomainDetails(auction.name)}
+                        >
+                          View Details
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Buy Now Tab */}
+          {activeTab === 'buy-now' && (
+            <motion.div 
+              className="tab-content"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              {listings.length === 0 && !isLoading ? (
+                <div className="empty-state glass">
+                  <FiAlertCircle size={48} />
+                  <h3>No Domains for Sale</h3>
+                  <p>There are currently no domains listed for immediate purchase. Check back later!</p>
+                  <button 
+                    className="btn-refresh-data"
+                    onClick={loadActiveListings}
+                    style={{ marginTop: '1rem' }}
+                  >
+                    🔄 Refresh Listings
+                  </button>
+                </div>
+              ) : (
+                <div className="auctions-grid">
+                  {listings.map((listing, index) => (
+                    <motion.div
+                      key={listing.name}
+                      className="auction-card glass listing-card"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div className="auction-header">
+                        <h3 className="domain-name">
+                          {listing.name}<span className="tld">.shm</span>
+                        </h3>
+                        <div className="auction-status">
+                          <span className="buy-now-badge">Buy Now</span>
+                        </div>
+                      </div>
+
+                      <div className="auction-details">
+                        <div className="price-info">
+                          <div className="fixed-price">
+                            <span className="label">Price</span>
+                            <span className="amount">{listing.price} SHM</span>
+                          </div>
+                          <div className="seller-info">
+                            <span className="label">Seller</span>
+                            <span className="address">{formatAddress(listing.seller)}</span>
+                          </div>
+                        </div>
+
+                        <div className="listing-stats">
+                          <span className="stat">
+                            <FiDollarSign /> Fixed Price
+                          </span>
+                          <span className="stat">
+                            <FiZap /> Instant Transfer
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="auction-actions">
+                        <button
+                          className="btn-bid"
+                          onClick={() => handleBuyDomain(listing.name, listing.price)}
+                          disabled={buyingDomain === listing.name || listing.seller.toLowerCase() === account?.toLowerCase()}
+                        >
+                          {buyingDomain === listing.name ? (
+                            <>
+                              <FiLoader className="spinning" /> Buying...
+                            </>
+                          ) : listing.seller.toLowerCase() === account?.toLowerCase() ? (
+                            'Your Listing'
+                          ) : (
+                            'Buy Now'
+                          )}
+                        </button>
+                        <button
+                          className="btn-view-details"
+                          onClick={() => onViewDomainDetails && onViewDomainDetails(listing.name)}
                         >
                           View Details
                         </button>

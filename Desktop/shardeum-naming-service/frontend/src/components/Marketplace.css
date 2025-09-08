@@ -749,6 +749,69 @@
   letter-spacing: 0.05em;
 }
 
+.buy-now-badge {
+  background: linear-gradient(135deg, #2ed573, #26de81);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Listing Card Styles */
+.listing-card .fixed-price {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.listing-card .fixed-price .amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2ed573;
+}
+
+.listing-card .seller-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+}
+
+.listing-card .seller-info .address {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.listing-stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.listing-stats .stat {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.listing-stats .stat svg {
+  color: #2ed573;
+}
+
 /* Enhanced Button Styles */
 .btn-bid {
   background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
