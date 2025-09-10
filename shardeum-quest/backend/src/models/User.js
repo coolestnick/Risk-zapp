@@ -10,7 +10,8 @@ const userSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: true,
-    sparse: true
+    sparse: true,
+    default: null
   },
   totalXP: {
     type: Number,
