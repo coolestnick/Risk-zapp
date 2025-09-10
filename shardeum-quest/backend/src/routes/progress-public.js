@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Progress = require('../models/Progress');
+const axios = require('axios');
 
 // Get user progress by wallet address
 router.get('/user/:walletAddress', async (req, res) => {
