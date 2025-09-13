@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { ethers } from 'ethers';
 import Card from './ui/Card';
 import { formatAddress, getIPFSUrl, getTimeAgo } from '../utils/constants';
 import { formatLargeNumber } from '../utils/helpers';
@@ -100,14 +101,14 @@ const TokenCard = ({ token, showStats = false, className }) => {
               <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
                 <div className="text-xs text-slate-400 mb-1">Market Cap</div>
                 <div className="text-white font-bold">
-                  ${formatLargeNumber(marketCap || 0)}
+                  {formatLargeNumber(parseFloat(ethers.formatEther(marketCap || 0)))} SHM
                 </div>
               </div>
               
               <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
                 <div className="text-xs text-slate-400 mb-1">Raised</div>
                 <div className="text-cyan-400 font-bold">
-                  {formatLargeNumber(totalRaised || 0)} SHM
+                  {formatLargeNumber(parseFloat(ethers.formatEther(marketCap || 0)))} SHM
                 </div>
               </div>
 

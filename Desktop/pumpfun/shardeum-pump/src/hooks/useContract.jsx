@@ -50,24 +50,113 @@ export const useContract = () => {
       throw new Error('Wallet not connected or contract not available');
     }
 
-    const { name, symbol, description, imageHash } = tokenData;
-    const value = ethAmount ? ethers.parseEther(ethAmount.toString()) : 0;
-
     try {
+      console.log('=== CREATE TOKEN DEBUG ===');
+      const { name, symbol, description, imageHash } = tokenData;
+      console.log('Token Data:', { name, symbol, description, imageHash });
+      console.log('ETH Amount:', ethAmount);
+
+      // Validate contract is available
+      console.log('Factory contract address:', contracts.factoryWithSigner.target || contracts.factoryWithSigner.address);
+      
+      // Test contract connection
+      try {
+        const contractCode = await provider.getCode(contracts.factoryWithSigner.target || contracts.factoryWithSigner.address);
+        console.log('Contract code length:', contractCode.length);
+        if (contractCode === '0x') {
+          throw new Error('Contract not deployed at this address');
+        }
+      } catch (contractError) {
+        console.error('Contract validation failed:', contractError);
+        throw new Error('Unable to connect to token factory contract');
+      }
+
+      // Validate inputs
+      if (!name || !symbol) {
+        throw new Error('Token name and symbol are required');
+      }
+
+      if (name.length < 1 || name.length > 50) {
+        throw new Error('Token name must be between 1 and 50 characters');
+      }
+
+      if (symbol.length < 1 || symbol.length > 10) {
+        throw new Error('Token symbol must be between 1 and 10 characters');
+      }
+
+      const value = ethAmount && ethAmount !== '0' ? ethers.parseEther(ethAmount.toString()) : 0n;
+      console.log('Value in wei:', value.toString());
+
+      // Get signer info
+      const signerAddress = await contracts.factoryWithSigner.runner.getAddress();
+      console.log('Signer address:', signerAddress);
+
+      // Check balance if sending ETH
+      if (value > 0) {
+        const balance = await provider.getBalance(signerAddress);
+        console.log('Current balance:', ethers.formatEther(balance), 'SHM');
+        
+        if (balance < value) {
+          throw new Error('Insufficient balance for initial purchase');
+        }
+      }
+
+      // Estimate gas first
+      console.log('Estimating gas for token creation...');
+      let gasEstimate;
+      try {
+        gasEstimate = await contracts.factoryWithSigner.createToken.estimateGas(
+          name,
+          symbol,
+          description || '', // desc in minimal ABI
+          imageHash || '',   // img in minimal ABI
+          { value }
+        );
+        console.log('Gas estimate:', gasEstimate.toString());
+      } catch (gasError) {
+        console.error('Gas estimation failed:', gasError);
+        // Use a higher fixed gas limit for token creation
+        gasEstimate = 800000n;
+      }
+
+      // Send transaction with estimated gas + 20% buffer
+      const gasLimit = gasEstimate + (gasEstimate * 20n / 100n);
+      console.log('Using gas limit:', gasLimit.toString());
+
+      console.log('Sending create token transaction...');
       const tx = await contracts.factoryWithSigner.createToken(
         name,
         symbol,
-        description, // desc in minimal ABI
-        imageHash,   // img in minimal ABI
-        { value, gasLimit: 500000 }
+        description || '', // desc in minimal ABI
+        imageHash || '',   // img in minimal ABI
+        { 
+          value, 
+          gasLimit: gasLimit
+        }
       );
 
+      console.log('Token creation transaction sent:', tx.hash);
       return tx;
     } catch (error) {
-      console.error('Failed to create token:', error);
-      throw error;
+      console.error('=== CREATE TOKEN ERROR ===');
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      console.error('Full error:', error);
+      
+      // Provide more specific error messages
+      if (error.message?.includes('insufficient funds')) {
+        throw new Error('Insufficient funds for transaction');
+      } else if (error.message?.includes('user rejected')) {
+        throw new Error('Transaction rejected by user');
+      } else if (error.code === 'UNPREDICTABLE_GAS_LIMIT') {
+        throw new Error('Transaction would likely fail - check your inputs and balance');
+      } else if (error.message?.includes('Token name') || error.message?.includes('Token symbol')) {
+        throw error; // Re-throw validation errors as-is
+      } else {
+        throw new Error(`Token creation failed: ${error.message || 'Unknown error'}`);
+      }
     }
-  }, [contracts.factoryWithSigner, isConnected]);
+  }, [contracts.factoryWithSigner, provider, isConnected]);
 
   // Buy tokens
   const buyTokens = useCallback(async (tokenAddress, ethAmount) => {
