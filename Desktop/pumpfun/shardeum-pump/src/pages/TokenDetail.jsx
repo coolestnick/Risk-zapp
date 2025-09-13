@@ -261,46 +261,57 @@ const TokenDetail = () => {
   const imageUrl = token.imageHash ? getIPFSUrl(token.imageHash) : '/api/placeholder/400/400';
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      {/* Token Header */}
-      <Card className="mb-8">
-        <div className="flex flex-col md:flex-row items-start space-y-6 md:space-y-0 md:space-x-8">
-          {/* Token Image */}
-          <div className="w-full md:w-48 flex-shrink-0">
-            <img
-              src={imageUrl}
-              alt={token.name}
-              className="w-full h-48 md:h-48 object-cover rounded-lg bg-dark-700"
-              onError={(e) => {
-                e.target.src = '/api/placeholder/400/400';
-              }}
-            />
-          </div>
+    <div className="min-h-screen relative">
+      {/* Background Effects */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 right-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl floating" />
+        <div className="absolute bottom-20 left-20 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl floating" style={{ animationDelay: '3s' }} />
+      </div>
 
-          {/* Token Info */}
-          <div className="flex-1">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h1 className="text-3xl font-bold text-white mb-2">
-                  {token.name}
-                </h1>
-                <p className="text-xl text-primary-400 font-medium mb-4">
-                  ${token.symbol}
-                </p>
-              </div>
-              
-              <div className="text-right">
-                <div
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    token.isListed
-                      ? 'bg-green-600/20 text-green-400 border border-green-600/30'
-                      : 'bg-primary-600/20 text-primary-400 border border-primary-600/30'
-                  }`}
-                >
-                  {token.isListed ? '📈 Listed on DEX' : '🚀 Bonding Curve'}
-                </div>
+      <div className="max-w-6xl mx-auto px-4 py-12 relative">
+        {/* Token Header */}
+        <div className="card mb-12 overflow-hidden">
+          <div className="flex flex-col lg:flex-row items-start space-y-8 lg:space-y-0 lg:space-x-12">
+            {/* Token Image */}
+            <div className="w-full lg:w-64 flex-shrink-0">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 rounded-2xl blur-sm opacity-30 group-hover:opacity-60 transition-opacity duration-300" />
+                <img
+                  src={imageUrl}
+                  alt={token.name}
+                  className="relative w-full h-64 object-cover rounded-2xl bg-slate-800 border-2 border-slate-700/50"
+                  onError={(e) => {
+                    e.target.src = '/api/placeholder/400/400';
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent rounded-2xl" />
               </div>
             </div>
+
+            {/* Token Info */}
+            <div className="flex-1 space-y-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h1 className="text-5xl font-black text-gradient mb-3 leading-tight">
+                    {token.name}
+                  </h1>
+                  <p className="text-2xl text-cyan-400 font-bold mb-6">
+                    ${token.symbol}
+                  </p>
+                </div>
+                
+                <div className="text-right">
+                  <div
+                    className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-bold border backdrop-blur-sm ${
+                      token.isListed
+                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 pulse-glow'
+                        : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
+                    }`}
+                  >
+                    {token.isListed ? '📈 LISTED ON DEX' : '🚀 BONDING CURVE'}
+                  </div>
+                </div>
+              </div>
 
             <p className="text-gray-300 mb-6 leading-relaxed">
               {token.description}
@@ -358,96 +369,156 @@ const TokenDetail = () => {
 
             {/* User Balance */}
             {isConnected && parseFloat(userBalance) > 0 && (
-              <div className="mt-4 p-3 bg-primary-600/20 border border-primary-600/30 rounded-lg">
-                <p className="text-primary-400 text-sm">Your Balance</p>
-                <p className="text-white font-semibold">
+              <div className="mt-6 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl backdrop-blur-sm">
+                <p className="text-cyan-400 text-sm font-bold mb-1">Your Balance</p>
+                <p className="text-white font-black text-lg">
                   {formatLargeNumber(userBalance)} {token.symbol}
                 </p>
               </div>
             )}
+            </div>
           </div>
         </div>
-      </Card>
 
       {/* Trading Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <Card>
-          <Card.Header>
-            <Card.Title>Buy {token.symbol}</Card.Title>
-          </Card.Header>
-          <div className="space-y-4">
-            <Input
-              label="Amount (SHM)"
-              placeholder="0.1"
-              value={buyAmount}
-              onChange={(e) => setBuyAmount(e.target.value)}
-              type="number"
-              step="0.001"
-              min="0"
-            />
-            <p className="text-sm text-gray-400">
-              Current Price: {parseFloat(price || 0).toFixed(8)} SHM per token
-            </p>
-            <Button 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        {/* Buy Section */}
+        <div className="trading-card">
+          <div className="mb-6">
+            <h3 className="text-2xl font-black text-gradient mb-2">
+              🚀 Buy {token.symbol}
+            </h3>
+            <p className="text-slate-400">Enter your position to join the rocket!</p>
+          </div>
+          
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-bold text-slate-300 mb-3">
+                Amount (SHM)
+              </label>
+              <input
+                type="number"
+                placeholder="0.1"
+                value={buyAmount}
+                onChange={(e) => setBuyAmount(e.target.value)}
+                step="0.001"
+                min="0"
+                className="input-field w-full text-lg"
+              />
+            </div>
+            
+            <div className="bg-slate-800/30 rounded-xl p-4 border border-slate-700/30">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Current Price:</span>
+                <span className="text-cyan-400 font-bold font-mono">
+                  {parseFloat(price || 0).toFixed(8)} SHM
+                </span>
+              </div>
+            </div>
+            
+            <button 
               onClick={handleBuy}
               disabled={!buyAmount || !isConnected || tradingLoading || token?.isListed}
-              loading={tradingLoading}
-              className="w-full"
+              className={`btn-primary w-full text-lg py-4 ${
+                tradingLoading ? 'opacity-75 cursor-not-allowed' : ''
+              }`}
             >
-              {token?.isListed ? 'Listed on DEX' : '🔄 Buy Tokens'}
-            </Button>
+              {tradingLoading ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Processing...</span>
+                </div>
+              ) : token?.isListed ? (
+                'Listed on DEX'
+              ) : (
+                '🔄 Buy Tokens'
+              )}
+            </button>
           </div>
-        </Card>
+        </div>
 
-        <Card>
-          <Card.Header>
-            <Card.Title>Sell {token.symbol}</Card.Title>
-          </Card.Header>
-          <div className="space-y-4">
-            <Input
-              label="Amount (Tokens)"
-              placeholder="1000"
-              value={sellAmount}
-              onChange={(e) => setSellAmount(e.target.value)}
-              type="number"
-              step="1"
-              min="0"
-            />
-            <p className="text-sm text-gray-400">
-              Your Balance: {formatLargeNumber(userBalance)} {token.symbol}
-            </p>
-            <Button 
+        {/* Sell Section */}
+        <div className="trading-card">
+          <div className="mb-6">
+            <h3 className="text-2xl font-black text-gradient mb-2">
+              💸 Sell {token.symbol}
+            </h3>
+            <p className="text-slate-400">Take profits when you're ready!</p>
+          </div>
+          
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-bold text-slate-300 mb-3">
+                Amount (Tokens)
+              </label>
+              <input
+                type="number"
+                placeholder="1000"
+                value={sellAmount}
+                onChange={(e) => setSellAmount(e.target.value)}
+                step="1"
+                min="0"
+                className="input-field w-full text-lg"
+              />
+            </div>
+            
+            <div className="bg-slate-800/30 rounded-xl p-4 border border-slate-700/30">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400">Your Balance:</span>
+                <span className="text-emerald-400 font-bold font-mono">
+                  {formatLargeNumber(userBalance)} {token.symbol}
+                </span>
+              </div>
+            </div>
+            
+            <button 
               onClick={handleSell}
               disabled={!sellAmount || !isConnected || tradingLoading || parseFloat(userBalance) === 0 || token?.isListed}
-              loading={tradingLoading}
-              className="w-full"
-              variant="secondary"
+              className={`btn-secondary w-full text-lg py-4 ${
+                tradingLoading ? 'opacity-75 cursor-not-allowed' : ''
+              }`}
             >
-              {token?.isListed ? 'Listed on DEX' : '💸 Sell Tokens'}
-            </Button>
+              {tradingLoading ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span>Processing...</span>
+                </div>
+              ) : token?.isListed ? (
+                'Listed on DEX'
+              ) : (
+                '💸 Sell Tokens'
+              )}
+            </button>
           </div>
-        </Card>
+        </div>
       </div>
 
       {/* Chart Placeholder */}
-      <Card className="mb-8">
-        <Card.Header>
-          <Card.Title>Price Chart</Card.Title>
-        </Card.Header>
-        <div className="h-64 flex items-center justify-center bg-dark-700/50 rounded-lg">
+      <div className="card mb-12">
+        <div className="mb-6">
+          <h3 className="text-2xl font-black text-gradient mb-2">
+            📊 Price Chart
+          </h3>
+          <p className="text-slate-400">Real-time price movements and trends</p>
+        </div>
+        <div className="h-64 flex items-center justify-center bg-slate-800/30 rounded-xl border border-slate-700/50">
           <div className="text-center">
-            <div className="text-4xl mb-2">📊</div>
-            <p className="text-gray-400">Price chart coming soon!</p>
+            <div className="text-6xl mb-4 floating">📊</div>
+            <p className="text-slate-400 text-lg">Price chart coming soon!</p>
+            <p className="text-slate-500 text-sm mt-2">Advanced charting features in development</p>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Token Details */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card>
-          <Card.Header>
-            <Card.Title>Token Information</Card.Title>
-          </Card.Header>
+        <div className="card">
+          <div className="mb-6">
+            <h3 className="text-2xl font-black text-gradient mb-2">
+              📋 Token Information
+            </h3>
+            <p className="text-slate-400">Smart contract details and metadata</p>
+          </div>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-400">Contract Address</span>
@@ -478,17 +549,22 @@ const TokenDetail = () => {
               </span>
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card>
-          <Card.Header>
-            <Card.Title>Recent Activity</Card.Title>
-          </Card.Header>
-          <div className="text-center py-8">
-            <div className="text-4xl mb-2">📈</div>
-            <p className="text-gray-400">Recent trades coming soon!</p>
+        <div className="card">
+          <div className="mb-6">
+            <h3 className="text-2xl font-black text-gradient mb-2">
+              📈 Recent Activity
+            </h3>
+            <p className="text-slate-400">Latest trades and transactions</p>
           </div>
-        </Card>
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4 floating">📈</div>
+            <p className="text-slate-400 text-lg">Recent trades coming soon!</p>
+            <p className="text-slate-500 text-sm mt-2">Transaction history will appear here</p>
+          </div>
+        </div>
+      </div>
       </div>
     </div>
   );

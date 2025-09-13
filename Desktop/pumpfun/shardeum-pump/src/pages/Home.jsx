@@ -96,77 +96,106 @@ const Home = () => {
   });
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl floating" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl floating" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl floating" style={{ animationDelay: '4s' }} />
+      </div>
+
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary-900/20 via-dark-900 to-purple-900/20 py-20">
+      <section className="relative py-32 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-            Launch Your Token on{' '}
-            <span className="text-gradient">Shardeum</span>
-          </h1>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-            The easiest way to create, trade, and discover meme tokens on the Shardeum network.
-            Join the revolution of fair launches and community-driven tokens.
-          </p>
+          <div className="animate-fade-in">
+            <h1 className="text-6xl md:text-8xl font-black text-white mb-8 leading-tight">
+              Launch Your Token on{' '}
+              <span className="text-gradient text-glow">Shardeum</span>
+            </h1>
+            <div className="w-32 h-1 bg-gradient-to-r from-cyan-500 to-purple-600 mx-auto mb-8 rounded-full" />
+          </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <p className="text-2xl text-slate-300 max-w-4xl mx-auto mb-12 leading-relaxed">
+              The <span className="text-gradient-gold">easiest way</span> to create, trade, and discover meme tokens on the Shardeum network.
+              Join the <span className="text-cyan-400 font-semibold">revolution</span> of fair launches and community-driven tokens.
+            </p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16 animate-zoom-in" style={{ animationDelay: '0.4s' }}>
             <Link to="/create">
-              <Button size="lg" className="w-full sm:w-auto">
-                🚀 Create Token
-              </Button>
+              <button className="btn-primary text-xl px-8 py-4">
+                🚀 Create Your Token
+              </button>
             </Link>
-            <Button variant="outline" size="lg" className="w-full sm:w-auto">
-              📚 Learn More
-            </Button>
+            <button className="btn-secondary text-xl px-8 py-4">
+              📚 Explore Tokens
+            </button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto">
-            <Card className="text-center bg-glass">
-              <div className="text-3xl font-bold text-white">
+          {/* Enhanced Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto animate-stagger">
+            <div className="stat-card animate-slide-up text-center">
+              <div className="text-5xl font-black text-gradient mb-3">
                 {formatLargeNumber(stats.totalTokens)}
               </div>
-              <div className="text-gray-400">Tokens Created</div>
-            </Card>
-            <Card className="text-center bg-glass">
-              <div className="text-3xl font-bold text-gray-500">
-                0.00 SHM
+              <div className="text-slate-400 text-lg font-semibold">Tokens Created</div>
+              <div className="mt-2 text-cyan-400 text-sm">🎯 Fair Launched</div>
+            </div>
+            <div className="stat-card animate-slide-up text-center">
+              <div className="text-5xl font-black text-slate-500 mb-3">
+                0.00
               </div>
-              <div className="text-gray-400">24h Volume</div>
-            </Card>
-            <Card className="text-center bg-glass">
-              <div className="text-3xl font-bold text-white">
-                {formatLargeNumber(stats.totalMarketCap)} SHM
+              <div className="text-slate-400 text-lg font-semibold">24h Volume (SHM)</div>
+              <div className="mt-2 text-purple-400 text-sm">📊 Trading Active</div>
+            </div>
+            <div className="stat-card animate-slide-up text-center">
+              <div className="text-5xl font-black text-gradient mb-3">
+                {formatLargeNumber(stats.totalMarketCap)}
               </div>
-              <div className="text-gray-400">Total Market Cap</div>
-            </Card>
+              <div className="text-slate-400 text-lg font-semibold">Total Market Cap (SHM)</div>
+              <div className="mt-2 text-emerald-400 text-sm">💎 Community Driven</div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Token Discovery */}
-      <section className="py-16">
+      <section className="py-20 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Header */}
+          <div className="text-center mb-16 animate-fade-in">
+            <h2 className="text-5xl font-black text-gradient mb-6">
+              🎯 Discover Tokens
+            </h2>
+            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+              Explore the latest meme tokens launched on Shardeum's lightning-fast network
+            </p>
+          </div>
+          
           {/* Filter Tabs */}
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-white">Discover Tokens</h2>
-            
-            <div className="flex bg-dark-800 rounded-lg p-1">
+          <div className="flex items-center justify-center mb-12 animate-slide-up">
+            <div className="flex bg-glass-strong rounded-2xl p-2 border border-slate-700/50">
               {[
-                { key: 'trending', label: '🔥 Trending', icon: '📈' },
-                { key: 'new', label: '✨ New', icon: '🆕' },
-                { key: 'volume', label: '💹 Volume', icon: '📊' },
+                { key: 'trending', label: '🔥 Trending', icon: '📈', color: 'from-red-500 to-orange-500' },
+                { key: 'new', label: '✨ New', icon: '🆕', color: 'from-cyan-500 to-blue-500' },
+                { key: 'volume', label: '💹 Volume', icon: '📊', color: 'from-purple-500 to-pink-500' },
               ].map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setFilter(tab.key)}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`relative px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
                     filter === tab.key
-                      ? 'bg-primary-600 text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-dark-700'
+                      ? `bg-gradient-to-r ${tab.color} text-white shadow-lg transform scale-105`
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800/50 hover:scale-105'
                   }`}
                 >
-                  {tab.label}
+                  <span className="relative z-10">{tab.label}</span>
+                  {filter === tab.key && (
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r opacity-20 blur-sm" style={{
+                      background: `linear-gradient(135deg, ${tab.color.includes('red') ? '#ef4444' : tab.color.includes('cyan') ? '#06b6d4' : '#a855f7'}, transparent)`
+                    }} />
+                  )}
                 </button>
               ))}
             </div>
