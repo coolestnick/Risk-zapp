@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const policySchema = new mongoose.Schema({
   policyId: {
@@ -129,4 +129,4 @@ policySchema.statics.findByTransactionHash = function(transactionHash) {
   return this.findOne({ transactionHash });
 };
 
-export default mongoose.model('Policy', policySchema);
+module.exports = mongoose.model('Policy', policySchema);

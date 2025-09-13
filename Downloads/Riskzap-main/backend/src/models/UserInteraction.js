@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const userInteractionSchema = new mongoose.Schema({
   walletAddress: {
@@ -69,4 +69,4 @@ userInteractionSchema.index({ walletAddress: 1, timestamp: -1 });
 userInteractionSchema.index({ interactionType: 1, timestamp: -1 });
 userInteractionSchema.index({ walletAddress: 1, interactionType: 1 });
 
-export default mongoose.model('UserInteraction', userInteractionSchema);
+module.exports = mongoose.model('UserInteraction', userInteractionSchema);

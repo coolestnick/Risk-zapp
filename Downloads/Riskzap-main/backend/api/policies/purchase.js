@@ -1,9 +1,9 @@
-import { connectToDatabase } from '../../lib/db.js';
-import { handleCors } from '../../lib/cors.js';
-import { rateLimit } from '../../lib/rateLimit.js';
-import Policy from '../../src/models/Policy.js';
-import User from '../../src/models/User.js';
-import UserInteraction from '../../src/models/UserInteraction.js';
+const { connectToDatabase } = require('../../lib/db');
+const { handleCors } = require('../../lib/cors');
+const { rateLimit } = require('../../lib/rateLimit');
+const Policy = require('../../src/models/Policy');
+const User = require('../../src/models/User');
+const UserInteraction = require('../../src/models/UserInteraction');
 
 // Apply rate limiting
 const limiter = rateLimit({
@@ -11,7 +11,7 @@ const limiter = rateLimit({
   max: 50 // 50 requests per minute
 });
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Handle CORS
   if (handleCors(req, res)) return;
 

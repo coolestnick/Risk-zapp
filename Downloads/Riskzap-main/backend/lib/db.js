@@ -1,12 +1,12 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 
 // Load environment variables
 dotenv.config();
 
 let isConnected = false;
 
-export async function connectToDatabase() {
+async function connectToDatabase() {
   if (isConnected) {
     return mongoose.connection;
   }
@@ -33,9 +33,14 @@ export async function connectToDatabase() {
 }
 
 // Graceful disconnect for serverless
-export async function disconnectFromDatabase() {
+async function disconnectFromDatabase() {
   if (isConnected) {
     await mongoose.disconnect();
     isConnected = false;
   }
 }
+
+module.exports = {
+  connectToDatabase,
+  disconnectFromDatabase
+};

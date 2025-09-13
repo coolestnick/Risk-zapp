@@ -1,6 +1,6 @@
 const defaultOrigins = 'https://risk-zapp.vercel.app,http://localhost:8081,http://localhost:8082,http://localhost:5173,http://localhost:3000';
 
-export function setCorsHeaders(res, origin) {
+function setCorsHeaders(res, origin) {
   // Allow all origins by using wildcard
   res.setHeader('Access-Control-Allow-Origin', '*');
   
@@ -12,7 +12,7 @@ export function setCorsHeaders(res, origin) {
   return res;
 }
 
-export function handleCors(req, res) {
+function handleCors(req, res) {
   const origin = req.headers.origin;
   setCorsHeaders(res, origin);
   
@@ -26,10 +26,16 @@ export function handleCors(req, res) {
 }
 
 // List of allowed origins for verification
-export const allowedOrigins = [
+const allowedOrigins = [
   'https://risk-zapp.vercel.app',  // Production frontend
   'http://localhost:8081',         // Local development
   'http://localhost:8082',         // Local development  
   'http://localhost:5173',         // Vite dev server
   'http://localhost:3000'          // Alternative dev port
 ];
+
+module.exports = {
+  setCorsHeaders,
+  handleCors,
+  allowedOrigins
+};

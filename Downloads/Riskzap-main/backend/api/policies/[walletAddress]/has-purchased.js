@@ -1,9 +1,9 @@
-import { connectToDatabase } from '../../../lib/db.js';
-import { handleCors } from '../../../lib/cors.js';
-import User from '../../../src/models/User.js';
-import Policy from '../../../src/models/Policy.js';
+const { connectToDatabase } = require('../../../lib/db');
+const { handleCors } = require('../../../lib/cors');
+const User = require('../../../src/models/User');
+const Policy = require('../../../src/models/Policy');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Handle CORS
   if (handleCors(req, res)) return;
 

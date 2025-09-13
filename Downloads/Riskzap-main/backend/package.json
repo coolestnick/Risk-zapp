@@ -2,7 +2,6 @@
   "name": "riskzap-backend",
   "version": "1.0.0",
   "description": "Backend API for RiskZap - Vercel Deployment",
-  "type": "module",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",

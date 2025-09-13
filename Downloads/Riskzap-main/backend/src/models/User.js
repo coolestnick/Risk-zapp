@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
   walletAddress: {
@@ -64,4 +64,4 @@ userSchema.methods.recordInteraction = function(interactionType, amount = 0) {
   return this.save();
 };
 
-export default mongoose.model('User', userSchema);
+module.exports = mongoose.model('User', userSchema);

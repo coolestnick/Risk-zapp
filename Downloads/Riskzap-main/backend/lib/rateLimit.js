@@ -2,7 +2,7 @@
 // Note: In production, you might want to use Redis or a database for persistence
 const requests = new Map();
 
-export function rateLimit(options = {}) {
+function rateLimit(options = {}) {
   const {
     windowMs = parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 900000, // 15 minutes
     max = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
@@ -53,3 +53,5 @@ setInterval(() => {
     }
   }
 }, 300000); // Cleanup every 5 minutes
+
+module.exports = { rateLimit };
