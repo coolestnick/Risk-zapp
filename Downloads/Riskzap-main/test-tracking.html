@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RiskZap Tracking Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>RiskZap Backend Tracking Test</h1>
+    
+    <div id="status"></div>
+    
+    <h2>Backend Status</h2>
+    <button onclick="checkHealth()">Check Backend Health</button>
+    
+    <h2>Test Tracking</h2>
+    <input type="text" id="walletAddress" placeholder="Enter wallet address" value="0x1234567890123456789012345678901234567890">
+    <br><br>
+    <button onclick="testTracking()">Test Track Interaction</button>
+    <button onclick="testBatchTracking()">Test Batch Tracking</button>
+    
+    <h2>Analytics</h2>
+    <button onclick="getUserAnalytics()">Get User Analytics</button>
+    <button onclick="getPlatformAnalytics()">Get Platform Analytics</button>
+    
+    <h2>Policy Testing</h2>
+    <button onclick="testPolicyPurchase()">Test Policy Purchase</button>
+    <button onclick="checkUserPolicies()">Check User Has Purchased</button>
+    <button onclick="getUserPolicyStatus()">Get User Policy Status</button>
+    
+    <div id="results" style="margin-top: 20px; padding: 20px; background: #f5f5f5; border-radius: 5px;"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001';
+        
+        function log(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            const className = type === 'error' ? 'error' : 'success';
+            statusDiv.innerHTML = `<div class="status ${className}">${message}</div>`;
+            console.log(message);
+        }
+        
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+        
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                log('Backend is healthy! ✅', 'success');
+                displayResults(data);
+            } catch (error) {
+                log(`Backend health check failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testTracking() {
+            const walletAddress = document.getElementById('walletAddress').value;
+            if (!walletAddress) {
+                log('Please enter a wallet address', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/tracking/interaction`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        walletAddress,
+                        interactionType: 'visit_page',
+                        metadata: { page: 'test_page', timestamp: new Date().toISOString() }
+                    })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    log('Interaction tracked successfully! ✅', 'success');
+                    displayResults(data);
+                } else {
+                    log(`Tracking failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Tracking error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testBatchTracking() {
+            const walletAddress = document.getElementById('walletAddress').value;
+            if (!walletAddress) {
+                log('Please enter a wallet address', 'error');
+                return;
+            }
+            
+            try {
+                const interactions = [
+                    {
+                        walletAddress,
+                        interactionType: 'connect_wallet',
+                        metadata: { test: 'batch1' }
+                    },
+                    {
+                        walletAddress,
+                        interactionType: 'view_policies',
+                        metadata: { test: 'batch2' }
+                    }
+                ];
+                
+                const response = await fetch(`${API_BASE}/api/tracking/interactions/batch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ interactions })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    log('Batch tracking successful! ✅', 'success');
+                    displayResults(data);
+                } else {
+                    log(`Batch tracking failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Batch tracking error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function getUserAnalytics() {
+            const walletAddress = document.getElementById('walletAddress').value;
+            if (!walletAddress) {
+                log('Please enter a wallet address', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/analytics/user/${walletAddress}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('User analytics retrieved! ✅', 'success');
+                    displayResults(data);
+                } else if (response.status === 404) {
+                    log('No analytics found for this user (user hasn\'t interacted yet)', 'error');
+                } else {
+                    log(`Analytics error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Analytics error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function getPlatformAnalytics() {
+            try {
+                const response = await fetch(`${API_BASE}/api/analytics/platform`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('Platform analytics retrieved! ✅', 'success');
+                    displayResults(data);
+                } else {
+                    log(`Platform analytics error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Platform analytics error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testPolicyPurchase() {
+            const walletAddress = document.getElementById('walletAddress').value;
+            if (!walletAddress) {
+                log('Please enter a wallet address', 'error');
+                return;
+            }
+            
+            try {
+                const policyData = {
+                    walletAddress,
+                    policyName: 'Test Health Insurance',
+                    policyType: 'health-micro',
+                    coverageAmount: 5000,
+                    premiumAmount: 250,
+                    platformFee: 12.5,
+                    totalPaid: 262.5,
+                    transactionHash: `0x${Math.random().toString(16).substring(2)}${'0'.repeat(64)}`.substring(0, 66),
+                    tokenSymbol: 'SHM',
+                    metadata: {
+                        testPurchase: true,
+                        timestamp: new Date().toISOString()
+                    }
+                };
+                
+                const response = await fetch(`${API_BASE}/api/policies/purchase`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(policyData)
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    log('Test policy purchase successful! ✅', 'success');
+                    displayResults(data);
+                } else {
+                    log(`Policy purchase failed: ${data.error}`, 'error');
+                    displayResults(data);
+                }
+            } catch (error) {
+                log(`Policy purchase error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkUserPolicies() {
+            const walletAddress = document.getElementById('walletAddress').value;
+            if (!walletAddress) {
+                log('Please enter a wallet address', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/policies/user/${walletAddress}/has-purchased`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`User purchase status: ${data.hasPurchased ? 'HAS PURCHASED' : 'NO PURCHASES'} ✅`, 'success');
+                    displayResults(data);
+                } else {
+                    log(`Check failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Check error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function getUserPolicyStatus() {
+            const walletAddress = document.getElementById('walletAddress').value;
+            if (!walletAddress) {
+                log('Please enter a wallet address', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/policies/user/${walletAddress}/status`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('Policy status retrieved! ✅', 'success');
+                    displayResults(data);
+                } else {
+                    log(`Status check failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Status error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-check health on page load
+        window.onload = checkHealth;
+    </script>
+</body>
+</html>

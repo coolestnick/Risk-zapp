@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "@vercel/node",
+      "maxDuration": 30
+    }
+  },
+  "routes": [
+    {
+      "src": "/health",
+      "dest": "/api/health"
+    },
+    {
+      "src": "/api/policies/purchase",
+      "dest": "/api/policies/purchase"
+    },
+    {
+      "src": "/api/policies/user/(.*)/has-purchased",
+      "dest": "/api/policies/$1/has-purchased"
+    },
+    {
+      "src": "/api/policies/user/(.*)/status",
+      "dest": "/api/policies/$1/status"
+    },
+    {
+      "src": "/api/tracking/interaction",
+      "dest": "/api/tracking/interaction"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/health"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

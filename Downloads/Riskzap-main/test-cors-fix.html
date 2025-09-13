@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🔧 CORS Fix Test - Frontend Port 8081</h1>
+    <p>This page tests the CORS fix for frontend running on port 8081</p>
+    
+    <button onclick="testHealth()">Test Health Endpoint</button>
+    <button onclick="testPolicyCheck()">Test Policy Status</button>
+    <button onclick="testPolicyCreate()">Test Policy Creation</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001';
+        
+        function displayResult(test, success, data) {
+            const resultsDiv = document.getElementById('results');
+            const className = success ? 'success' : 'error';
+            const status = success ? '✅ SUCCESS' : '❌ FAILED';
+            
+            resultsDiv.innerHTML += `
+                <div class="result ${className}">
+                    <strong>${test}: ${status}</strong><br>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                </div>
+            `;
+        }
+        
+        async function testHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResult('Health Check', true, data);
+                } else {
+                    displayResult('Health Check', false, { error: 'Non-200 response', data });
+                }
+            } catch (error) {
+                displayResult('Health Check', false, { error: error.message });
+            }
+        }
+        
+        async function testPolicyCheck() {
+            try {
+                const testWallet = '0x1234567890123456789012345678901234567890';
+                const response = await fetch(`${API_BASE}/api/policies/user/${testWallet}/has-purchased`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResult('Policy Status Check', true, data);
+                } else {
+                    displayResult('Policy Status Check', false, { error: 'Non-200 response', data });
+                }
+            } catch (error) {
+                displayResult('Policy Status Check', false, { error: error.message });
+            }
+        }
+        
+        async function testPolicyCreate() {
+            try {
+                const testPolicy = {
+                    walletAddress: '0x1234567890123456789012345678901234567890',
+                    policyName: 'CORS Test Policy',
+                    policyType: 'health-micro',
+                    coverageAmount: 1000,
+                    premiumAmount: 50,
+                    totalPaid: 55,
+                    transactionHash: '0xcorstest' + Math.random().toString(16).substring(2) + '0'.repeat(50),
+                    metadata: { corsTest: true }
+                };
+                
+                const response = await fetch(`${API_BASE}/api/policies/purchase`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testPolicy)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResult('Policy Creation', true, data);
+                } else {
+                    displayResult('Policy Creation', false, { error: 'Non-200 response', data });
+                }
+            } catch (error) {
+                displayResult('Policy Creation', false, { error: error.message });
+            }
+        }
+        
+        // Auto-run health check on page load
+        window.onload = () => {
+            console.log('🧪 Running CORS fix test from port 8081');
+            testHealth();
+        };
+    </script>
+</body>
+</html>

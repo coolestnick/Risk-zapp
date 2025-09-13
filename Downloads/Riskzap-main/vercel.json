@@ -1,0 +1,21 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install --legacy-peer-deps",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "env": {
+    "VITE_SHM_CHAIN_ID": "8080",
+    "VITE_SHM_TOKEN_ADDRESS": "0xaa2b86e1f9de4cbdeaf177e61ce0e2fc091f9f9e",
+    "VITE_POLICY_CONTRACT": "0x055682a1a8fa88ed10a56724d29bcd44215e04d5",
+    "VITE_COMPANY_WALLET": "0x8a97f55b6D61faA30fB6b33D602dBB0714822D80",
+    "VITE_SHM_TOKEN_DECIMALS": "18",
+    "VITE_DEMO_MODE": "false"
+  }
+}

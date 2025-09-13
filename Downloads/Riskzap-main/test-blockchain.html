@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Connection Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 40px auto; 
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+        }
+        button:hover { background: #0056b3; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .info { color: #17a2b8; }
+        #output { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 4px; 
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 RiskZap Blockchain Connection Debugger</h1>
+    
+    <div class="test-section">
+        <h3>MetaMask Connection Tests</h3>
+        <button onclick="testMetaMaskInstalled()">1. Check MetaMask Installed</button>
+        <button onclick="testWalletConnection()">2. Connect Wallet</button>
+        <button onclick="testNetworkSwitch()">3. Switch to Shardeum</button>
+        <button onclick="testBalance()">4. Check SHM Balance</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Network Tests</h3>
+        <button onclick="testRPCProviders()">5. Test RPC Providers</button>
+        <button onclick="testContractDeployment()">6. Check Contracts</button>
+    </div>
+
+    <div class="test-section">
+        <h3>Full Integration Test</h3>
+        <button onclick="runFullTest()">🚀 Run All Tests</button>
+        <button onclick="clearOutput()">🗑️ Clear Output</button>
+    </div>
+
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            output.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            output.innerHTML = '';
+        }
+
+        async function testMetaMaskInstalled() {
+            log('🔍 Testing MetaMask installation...');
+            
+            if (typeof window.ethereum !== 'undefined') {
+                log('✅ MetaMask is installed!', 'success');
+                log(`   Provider: ${window.ethereum.isMetaMask ? 'MetaMask' : 'Other'}`);
+                return true;
+            } else {
+                log('❌ MetaMask not found! Please install MetaMask extension.', 'error');
+                return false;
+            }
+        }
+
+        async function testWalletConnection() {
+            log('🔌 Testing wallet connection...');
+            
+            try {
+                if (!window.ethereum) {
+                    log('❌ No wallet found', 'error');
+                    return false;
+                }
+
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                
+                if (accounts.length > 0) {
+                    log('✅ Wallet connected successfully!', 'success');
+                    log(`   Address: ${accounts[0]}`);
+                    return accounts[0];
+                } else {
+                    log('❌ No accounts found', 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Connection failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testNetworkSwitch() {
+            log('🌐 Testing network switch to Shardeum...');
+            
+            try {
+                // Check current network
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                log(`   Current Chain ID: ${chainId} (${parseInt(chainId, 16)})`);
+                
+                if (chainId === '0x1f90') {
+                    log('✅ Already on Shardeum network!', 'success');
+                    return true;
+                }
+
+                // Try to switch network
+                log('   Switching to Shardeum Unstablenet...');
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0x1f90' }], // 8080 in hex
+                    });
+                    log('✅ Network switched successfully!', 'success');
+                    return true;
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        log('   Network not found, adding Shardeum...');
+                        
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: '0x1f90',
+                                chainName: 'Shardeum Unstablenet',
+                                rpcUrls: ['https://api-unstable.shardeum.org'],
+                                nativeCurrency: {
+                                    name: 'SHM',
+                                    symbol: 'SHM',
+                                    decimals: 18,
+                                },
+                                blockExplorerUrls: ['https://explorer-unstable.shardeum.org/'],
+                            }]
+                        });
+                        
+                        log('✅ Shardeum network added and switched!', 'success');
+                        return true;
+                    } else {
+                        throw switchError;
+                    }
+                }
+            } catch (error) {
+                log(`❌ Network switch failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testBalance() {
+            log('💰 Testing SHM balance check...');
+            
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (!accounts.length) {
+                    log('❌ No wallet connected', 'error');
+                    return false;
+                }
+
+                const balance = await window.ethereum.request({
+                    method: 'eth_getBalance',
+                    params: [accounts[0], 'latest']
+                });
+
+                const balanceInSHM = parseInt(balance, 16) / Math.pow(10, 18);
+                log(`✅ Balance retrieved successfully!`, 'success');
+                log(`   Address: ${accounts[0]}`);
+                log(`   Balance: ${balanceInSHM.toFixed(4)} SHM`);
+                return balanceInSHM;
+            } catch (error) {
+                log(`❌ Balance check failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testRPCProviders() {
+            log('🔄 Testing RPC provider connectivity...');
+            
+            const rpcUrls = [
+                'https://api-unstable.shardeum.org',
+                'https://rpc-unstable.shardeum.org',
+                'https://api.shardeum.org'
+            ];
+
+            let workingProvider = null;
+
+            for (const url of rpcUrls) {
+                try {
+                    log(`   Testing: ${url}`);
+                    
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            jsonrpc: '2.0',
+                            method: 'eth_blockNumber',
+                            params: [],
+                            id: 1
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.result) {
+                        const blockNumber = parseInt(data.result, 16);
+                        log(`   ✅ ${url} - Block: ${blockNumber}`, 'success');
+                        if (!workingProvider) workingProvider = url;
+                    } else {
+                        log(`   ❌ ${url} - Invalid response`, 'error');
+                    }
+                } catch (error) {
+                    log(`   ❌ ${url} - ${error.message}`, 'error');
+                }
+            }
+
+            if (workingProvider) {
+                log(`✅ At least one RPC provider is working!`, 'success');
+                return true;
+            } else {
+                log(`❌ All RPC providers failed!`, 'error');
+                return false;
+            }
+        }
+
+        async function testContractDeployment() {
+            log('📜 Testing smart contract deployment...');
+            
+            const contracts = {
+                'SHM Token': '0xaa2b86e1f9de4cbdeaf177e61ce0e2fc091f9f9e',
+                'Policy Manager': '0x055682a1a8fa88ed10a56724d29bcd44215e04d5'
+            };
+
+            try {
+                for (const [name, address] of Object.entries(contracts)) {
+                    const code = await window.ethereum.request({
+                        method: 'eth_getCode',
+                        params: [address, 'latest']
+                    });
+
+                    if (code && code !== '0x' && code !== '0x0') {
+                        log(`   ✅ ${name}: Contract deployed at ${address}`, 'success');
+                    } else {
+                        log(`   ❌ ${name}: No contract found at ${address}`, 'error');
+                    }
+                }
+                return true;
+            } catch (error) {
+                log(`❌ Contract check failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function runFullTest() {
+            log('🚀 Running comprehensive blockchain test...\n');
+            
+            const results = {};
+            results.metaMask = await testMetaMaskInstalled();
+            
+            if (results.metaMask) {
+                results.connection = await testWalletConnection();
+                
+                if (results.connection) {
+                    results.network = await testNetworkSwitch();
+                    results.balance = await testBalance();
+                }
+            }
+            
+            results.rpc = await testRPCProviders();
+            results.contracts = await testContractDeployment();
+
+            log('\n📊 TEST SUMMARY:');
+            log(`   MetaMask: ${results.metaMask ? '✅' : '❌'}`, results.metaMask ? 'success' : 'error');
+            log(`   Connection: ${results.connection ? '✅' : '❌'}`, results.connection ? 'success' : 'error');
+            log(`   Network: ${results.network ? '✅' : '❌'}`, results.network ? 'success' : 'error');
+            log(`   Balance: ${results.balance !== false ? '✅' : '❌'}`, results.balance !== false ? 'success' : 'error');
+            log(`   RPC Providers: ${results.rpc ? '✅' : '❌'}`, results.rpc ? 'success' : 'error');
+            log(`   Contracts: ${results.contracts ? '✅' : '❌'}`, results.contracts ? 'success' : 'error');
+
+            const allGood = results.metaMask && results.connection && results.network && results.balance !== false && results.rpc && results.contracts;
+            
+            if (allGood) {
+                log('\n🎉 ALL TESTS PASSED! Your blockchain setup is working perfectly!', 'success');
+                log('   You can now use the RiskZap DApp with full functionality.');
+            } else {
+                log('\n⚠️ Some tests failed. Please check the issues above.', 'error');
+                log('   Common solutions:');
+                log('   - Install MetaMask extension');
+                log('   - Add Shardeum network to MetaMask');
+                log('   - Get some SHM tokens for testing');
+            }
+        }
+
+        // Run basic check on page load
+        window.addEventListener('load', () => {
+            log('🔧 RiskZap Blockchain Debugger Ready');
+            log('   Click "Run All Tests" to check your setup!\n');
+        });
+    </script>
+</body>
+</html>
