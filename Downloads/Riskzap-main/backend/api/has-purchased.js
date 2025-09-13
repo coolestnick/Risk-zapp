@@ -13,37 +13,25 @@ module.exports = async function handler(req, res) {
     // Connect to database
     await connectToDatabase();
     
-    // Lazy load models
-    const User = require('../src/models/User');
-    const Policy = require('../src/models/Policy');
-
     const { walletAddress } = req.query;
 
     if (!walletAddress) {
       return res.status(400).json({ error: 'walletAddress is required' });
     }
 
+    // Use raw database queries (more reliable in serverless)
+    const mongoose = require('mongoose');
+    const db = mongoose.connection.db;
+    
     // Get user data
-    const user = await User.findOne({ walletAddress });
-    const hasPurchased = user?.hasPurchased || false;
-
-    // Double-check with Policy collection if user shows no purchases
-    if (!hasPurchased) {
-      const policyCount = await Policy.countDocuments({ walletAddress });
-      if (policyCount > 0) {
-        // Update user record if there's a mismatch
-        await User.findOneAndUpdate(
-          { walletAddress },
-          { hasPurchased: true },
-          { upsert: true }
-        );
-        return res.json({ hasPurchased: true, policies: policyCount });
-      }
-    }
+    const user = await db.collection('users').findOne({ walletAddress });
+    const policyCount = await db.collection('policies').countDocuments({ walletAddress });
+    
+    const hasPurchased = user?.hasPurchased || policyCount > 0;
 
     res.json({ 
       hasPurchased,
-      policies: user?.totalPurchases || 0 
+      policies: user?.totalPurchases || policyCount || 0
     });
 
   } catch (error) {
