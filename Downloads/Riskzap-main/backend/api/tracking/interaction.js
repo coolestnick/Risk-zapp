@@ -1,28 +1,21 @@
 const { connectToDatabase } = require('../../lib/db');
 const { handleCors } = require('../../lib/cors');
-const { rateLimit } = require('../../lib/rateLimit');
-const UserInteraction = require('../../src/models/UserInteraction');
-const User = require('../../src/models/User');
-
-// Apply rate limiting
-const limiter = rateLimit({
-  windowMs: 60000, // 1 minute
-  max: 50 // 50 requests per minute
-});
 
 module.exports = async function handler(req, res) {
   // Handle CORS
   if (handleCors(req, res)) return;
 
-  // Apply rate limiting
-  limiter(req, res, async () => {
+  try {
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    try {
-      // Connect to database
-      await connectToDatabase();
+    // Connect to database
+    await connectToDatabase();
+    
+    // Lazy load models
+    const UserInteraction = require('../../src/models/UserInteraction');
+    const User = require('../../src/models/User');
 
       const {
         walletAddress,
@@ -97,9 +90,8 @@ module.exports = async function handler(req, res) {
         message: 'Interaction tracked successfully'
       });
 
-    } catch (error) {
-      console.error('Error tracking interaction:', error);
-      res.status(500).json({ error: 'Failed to track interaction' });
-    }
-  });
+  } catch (error) {
+    console.error('Error tracking interaction:', error);
+    res.status(500).json({ error: 'Failed to track interaction' });
+  }
 }

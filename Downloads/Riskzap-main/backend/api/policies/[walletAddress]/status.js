@@ -1,7 +1,5 @@
 const { connectToDatabase } = require('../../../lib/db');
 const { handleCors } = require('../../../lib/cors');
-const User = require('../../../src/models/User');
-const Policy = require('../../../src/models/Policy');
 
 module.exports = async function handler(req, res) {
   // Handle CORS
@@ -14,6 +12,10 @@ module.exports = async function handler(req, res) {
   try {
     // Connect to database
     await connectToDatabase();
+    
+    // Lazy load models
+    const User = require('../../../src/models/User');
+    const Policy = require('../../../src/models/Policy');
 
     const { walletAddress } = req.query;
 
