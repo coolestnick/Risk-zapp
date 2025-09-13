@@ -10,12 +10,20 @@ module.exports = async function handler(req, res) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // Connect to database
-    await connectToDatabase();
-    
-    // Lazy load models
-    const UserInteraction = require('../../src/models/UserInteraction');
-    const User = require('../../src/models/User');
+    // Connect to database with crash protection
+    try {
+      await connectToDatabase();
+    } catch (dbError) {
+      console.error('Database connection failed:', dbError);
+      return res.status(503).json({ 
+        error: 'Database temporarily unavailable',
+        retryAfter: '30 seconds'
+      });
+    }
+
+    // Use raw database queries for crash protection
+    const mongoose = require('mongoose');
+    const db = mongoose.connection.db;
 
       const {
         walletAddress,

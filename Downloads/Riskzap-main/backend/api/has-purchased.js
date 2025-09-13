@@ -1,17 +1,20 @@
 const { connectToDatabase } = require('../lib/db');
 const { handleCors } = require('../lib/cors');
+const { monitor, withMonitoring, withDbMonitoring } = require('../lib/monitoring');
 
 module.exports = async function handler(req, res) {
   // Handle CORS
   if (handleCors(req, res)) return;
 
-  try {
+  return await withMonitoring(async () => {
     if (req.method !== 'GET') {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    // Connect to database
-    await connectToDatabase();
+    // Connect to database with monitoring
+    await withDbMonitoring(async () => {
+      await connectToDatabase();
+    });
     
     const { walletAddress } = req.query;
 
@@ -19,13 +22,16 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'walletAddress is required' });
     }
 
-    // Use raw database queries (more reliable in serverless)
+    // Use raw database queries with monitoring
     const mongoose = require('mongoose');
     const db = mongoose.connection.db;
     
-    // Get user data
-    const user = await db.collection('users').findOne({ walletAddress });
-    const policyCount = await db.collection('policies').countDocuments({ walletAddress });
+    // Get user data with crash protection
+    const [user, policyCount] = await withDbMonitoring(async () => {
+      const userQuery = db.collection('users').findOne({ walletAddress });
+      const policyQuery = db.collection('policies').countDocuments({ walletAddress });
+      return Promise.all([userQuery, policyQuery]);
+    });
     
     const hasPurchased = user?.hasPurchased || policyCount > 0;
 
@@ -34,8 +40,5 @@ module.exports = async function handler(req, res) {
       policies: user?.totalPurchases || policyCount || 0
     });
 
-  } catch (error) {
-    console.error('Error checking purchase status:', error);
-    res.status(500).json({ error: 'Failed to check purchase status' });
-  }
+  }, 'has-purchased');
 }
