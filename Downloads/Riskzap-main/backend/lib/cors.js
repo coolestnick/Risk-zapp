@@ -1,18 +1,8 @@
 const defaultOrigins = 'https://risk-zapp.vercel.app,http://localhost:8081,http://localhost:8082,http://localhost:5173,http://localhost:3000';
 
 export function setCorsHeaders(res, origin) {
-  const allowedOrigins = (process.env.CORS_ORIGIN || defaultOrigins).split(',').map(o => o.trim());
-  
-  // Check if the request origin is in our allowed list
-  const requestOrigin = origin || allowedOrigins[0]; // Default to production URL
-  const isAllowed = allowedOrigins.includes(requestOrigin);
-  
-  if (isAllowed) {
-    res.setHeader('Access-Control-Allow-Origin', requestOrigin);
-  } else {
-    // Default to production URL if origin not allowed
-    res.setHeader('Access-Control-Allow-Origin', 'https://risk-zapp.vercel.app');
-  }
+  // Allow all origins by using wildcard
+  res.setHeader('Access-Control-Allow-Origin', '*');
   
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');

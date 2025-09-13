@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Development files
+src/
+*.test.js
+*.spec.js
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.log
+*.tmp
+temp/
+tmp/
+
+# Build files not needed for serverless
+dist/
+build/
+
+# Development dependencies
+nodemon.json
+.eslintrc.json
+.prettierrc
+
+# Other
+.vercel
+*.backup
+*.bak
