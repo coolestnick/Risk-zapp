@@ -1,0 +1,31 @@
+{
+  "name": "riskzap-backend",
+  "version": "1.0.0",
+  "description": "Backend API for RiskZap - Vercel Deployment",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "build": "echo 'Vercel serverless build'",
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel",
+    "deploy:dev": "vercel dev",
+    "logs": "vercel logs --prod",
+    "logs:dev": "vercel logs",
+    "env:pull": "vercel env pull",
+    "env:add": "vercel env add",
+    "env:list": "vercel env ls",
+    "clean": "rm -rf .vercel node_modules",
+    "test": "echo 'No tests specified'"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "mongoose": "^7.8.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "vercel": "^32.0.0"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}

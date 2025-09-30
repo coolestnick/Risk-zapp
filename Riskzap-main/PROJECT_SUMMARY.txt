@@ -1,0 +1,33 @@
+RiskZap Project Summary
+=======================
+
+Frontend: https://risk-zapp.vercel.app/
+- Developed by Community Member
+- Built with React/Vite
+- Deployed on Vercel
+
+Backend: https://risk-zapp-fn3s.vercel.app/
+- Built by us
+- Custom APIs developed in-house
+- Node.js serverless functions
+- Deployed on Vercel
+
+Database:
+- MongoDB on DigitalOcean
+- Hosted under our account
+- Connection: mongodb+srv://doadmin:pzIW43D98U276d5i@Risk-Zapp-DB-19d26de0.mongo.ondigitalocean.com/admin
+
+Key APIs (Built by us):
+- /api/health - System health check
+- /api/policies/purchase - Policy purchase endpoint
+- /api/policies/[wallet]/has-purchased - Check user purchases
+- /api/policies/[wallet]/status - User policy status
+- /api/has-purchased?walletAddress= - Simple purchase check
+- /api/user-status?walletAddress= - Comprehensive user status
+- /api/tracking/interaction - User analytics
+- /api/debug - Debug endpoint
+
+Development:
+- Frontend: Community contribution
+- Backend & APIs: Our development
+- Database: Our DigitalOcean MongoDB instance

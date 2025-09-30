@@ -1,7 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/api/public/(.*)", "destination": "http://34.170.218.238/api/public/$1" },
-    { "source": "/api/(.*)", "destination": "http://34.170.218.238/api/$1" },
-    { "source": "/(.*)", "destination": "/" }
-  ]
-}
