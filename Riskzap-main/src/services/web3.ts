@@ -144,6 +144,9 @@ export function setConfiguredTokenAddress(addr: string) {
 }
 
 export function getConfiguredCompanyWallet(): string | null {
+  // Hardcoded company wallet address
+  const HARDCODED_COMPANY_WALLET = '0x8a97f55b6D61faA30fB6b33D602dBB0714822D80';
+
   try {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(LS_COMPANY_KEY);
@@ -163,14 +166,20 @@ export function getConfiguredCompanyWallet(): string | null {
           return ethers.getAddress(env);
         } catch {
           console.error('Invalid company wallet address in environment variable');
-          return null;
         }
       }
     }
   } catch (e) {
     console.debug('getConfiguredCompanyWallet read error', e);
   }
-  return null; // intentionally no hardcoded default
+
+  // Return hardcoded wallet as final fallback
+  try {
+    return ethers.getAddress(HARDCODED_COMPANY_WALLET);
+  } catch {
+    console.error('Hardcoded company wallet address is invalid');
+    return null;
+  }
 }
 
 export function setConfiguredCompanyWallet(addr: string) {

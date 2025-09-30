@@ -44,19 +44,19 @@ VITE_SHM_TOKEN_DECIMALS=18
 
 ---
 
-### 3. Company Wallet Address (REQUIRED)
+### 3. Company Wallet Address (HARDCODED - No Environment Variable Needed)
 
-```bash
-VITE_COMPANY_WALLET=0xYourCompanyWalletAddress
-```
+**Hardcoded as:** `0x8a97f55b6D61faA30fB6b33D602dBB0714822D80`
 
 **Purpose:** The wallet address that receives premium payments from policy purchases.
 
 **Used in:**
-- `src/services/web3.ts:152,455` - Payment recipient
-- `src/main.tsx:13` - Fallback wallet configuration
+- `src/services/web3.ts:147` - Hardcoded company wallet
+- Fallback priority: localStorage → env variable → hardcoded
 
-**⚠️ Important:** Replace `0xYourCompanyWalletAddress` with your actual company wallet address.
+**Note:** No environment variable needed. The wallet is hardcoded in the source code. You can still override it via:
+1. Admin Settings UI (saves to localStorage)
+2. Environment variable `VITE_COMPANY_WALLET` (optional)
 
 ---
 
@@ -127,9 +127,10 @@ VITE_SHM_CHAIN_ID=8080
 VITE_SHM_TOKEN_DECIMALS=18
 
 # ============================================
-# REQUIRED - Company Wallet
+# OPTIONAL - Company Wallet (Hardcoded in code)
 # ============================================
-VITE_COMPANY_WALLET=0xYourCompanyWalletAddress
+# VITE_COMPANY_WALLET=0xYourCompanyWalletAddress
+# Note: Company wallet is hardcoded as 0x8a97f55b6D61faA30fB6b33D602dBB0714822D80
 
 # ============================================
 # OPTIONAL - Custom Token
