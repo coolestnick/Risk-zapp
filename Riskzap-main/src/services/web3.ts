@@ -147,10 +147,25 @@ export function getConfiguredCompanyWallet(): string | null {
   try {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(LS_COMPANY_KEY);
-      if (stored) return stored;
+      if (stored) {
+        // Validate and normalize the address with proper checksum
+        try {
+          return ethers.getAddress(stored);
+        } catch {
+          console.warn('Invalid company wallet address in localStorage');
+        }
+      }
       // fall back to env only if provided
       const env = (import.meta as any)?.env?.VITE_COMPANY_WALLET;
-      if (env) return env;
+      if (env) {
+        // Validate and normalize the address with proper checksum
+        try {
+          return ethers.getAddress(env);
+        } catch {
+          console.error('Invalid company wallet address in environment variable');
+          return null;
+        }
+      }
     }
   } catch (e) {
     console.debug('getConfiguredCompanyWallet read error', e);

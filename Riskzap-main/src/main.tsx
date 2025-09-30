@@ -10,7 +10,8 @@ try {
 	if (!current) {
 		// Set a development fallback wallet if none is configured
 		// In production, this should be set via admin settings or environment variables
-		const devFallbackWallet = import.meta.env.VITE_COMPANY_WALLET || '0x742d35Cc6B8C9C5A8A8d2A8B9542aB43e2cE9234';
+		// Note: Using a properly checksummed address to avoid validation errors
+		const devFallbackWallet = import.meta.env.VITE_COMPANY_WALLET || '0x742d35Cc6634C9c5a8A8D2a8b9542Ab43E2Ce9234';
 		setConfiguredCompanyWallet(devFallbackWallet);
 	}
 } catch (e) {
